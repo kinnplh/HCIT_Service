@@ -1,9 +1,12 @@
 package pcg.hcit_service;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Pair;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
@@ -17,6 +20,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static android.content.Context.WINDOW_SERVICE;
+
 /**
  * Class {@code Utility} provides several useful methods and classes.
  */
@@ -29,6 +34,59 @@ public class Utility {
         if(BuildConfig.DEBUG && !cond){
             throw new AssertionError();
         }
+    }
+
+    public static float screenWidthPixel;
+    public static float screenHeightPixel;
+    public static float screenWidthMM;
+    public static float screenHeightMM;
+    public static float xdpi;
+    public static float ydpi;
+    public static float statusBarHeightPixel;
+    public static float statusBarHeightMM;
+    public static float navBarHeightPixel;
+    public static float navBarHeightMM;
+
+    public static void init(Context s){
+        Point p = new Point();
+        ((WindowManager) s.getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getRealSize(p);
+        screenHeightPixel = p.y;
+        screenWidthPixel = p.x;
+        DisplayMetrics dm = s.getResources().getDisplayMetrics();
+        xdpi = dm.xdpi;
+        ydpi = dm.ydpi;
+        navBarHeightPixel = Utility.getNavBarHeight(s);
+        navBarHeightMM = convertInchIntoMM(navBarHeightPixel / ydpi);
+
+        // screenHeightPixel -= (navBarHeightPixel * (isNavigationBarShow(context)? 1:0));
+
+        screenWidthMM = convertInchIntoMM(screenWidthPixel / xdpi);
+        screenHeightMM = convertInchIntoMM(screenHeightPixel / ydpi);
+
+        statusBarHeightPixel = Utility.getStatusBarHeight(s);
+        statusBarHeightMM = convertInchIntoMM(statusBarHeightPixel / ydpi);
+    }
+
+    private static int getNavBarHeight(Context context){
+        int res = 0;
+        int resourceId = context.getResources().getIdentifier("navigation_bar_height","dimen", "android");
+        if(resourceId > 0){
+            res = context.getResources().getDimensionPixelSize(resourceId);
+        }
+        return res;
+    }
+
+    private static float convertInchIntoMM(float inch){
+        return inch / 0.03937008f;
+    }
+
+    private static int getStatusBarHeight(Context context) {
+        int result = 0;
+        int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = context.getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 
     /**

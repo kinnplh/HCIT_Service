@@ -31,6 +31,7 @@ public class HCITService extends AccessibilityService {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        Utility.init(this);
         refreshThread  = RefreshThread.getInstance();
         new Thread(){
             @Override
@@ -39,17 +40,6 @@ public class HCITService extends AccessibilityService {
                 TestUtility.test();
             }
         }.start();
-        try {
-            Class<?> cls = Class.forName(YOUR_CLASS_NAME);
-            Constructor constructor = cls.getConstructor();
-            proxy = (InteractionProxy) constructor.newInstance();
-            proxy.onCreate(this);
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            e.printStackTrace();
-            Utility.toast(this, "Creating proxy failed", Toast.LENGTH_LONG);
-            disableSelf();
-            return;
-        }
     }
 
     /**
@@ -80,6 +70,17 @@ public class HCITService extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
         refreshThread.start();
+        try {
+            Class<?> cls = Class.forName(YOUR_CLASS_NAME);
+            Constructor constructor = cls.getConstructor();
+            proxy = (InteractionProxy) constructor.newInstance();
+            proxy.onCreate(this);
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            e.printStackTrace();
+            Utility.toast(this, "Creating proxy failed", Toast.LENGTH_LONG);
+            disableSelf();
+            return;
+        }
         if(proxy != null){
             proxy.onServiceConnected();
         }
