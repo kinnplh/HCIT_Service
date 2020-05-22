@@ -203,19 +203,23 @@ public class RefreshThread extends Thread {
         if(crtPageInfo != null){
             crtPageName = TemplateManager.getPageName(crtPageInfo.getPackageName(), crtPageInfo.getIndex());
         }
+        String lastPageName = null;
+        if(lastPageInfo != null){
+            lastPageName = TemplateManager.getPageName(lastPageInfo.getPackageName(), lastPageInfo.getIndex());
+        }
         if(judgeRes == null){
             for(ContentChangeListener l: listeners){
-                l.onUnknownPageContentChange(crtPageName, AccessibilityNodeInfoRecord.getNodeChangeStateToNodeList());
+                l.onUnknownPageContentChange(lastPageName, AccessibilityNodeInfoRecord.getNodeChangeStateToNodeList());
             }
         } else {
             PageTemplateInfo crtPage = judgeRes.first;
             if(judgeRes.first == lastPageInfo){
                 for(ContentChangeListener l: listeners){
-                    l.onPageUpdate(crtPageName, AccessibilityNodeInfoRecord.getNodeChangeStateToNodeList());
+                    l.onPageUpdate(lastPageName, AccessibilityNodeInfoRecord.getNodeChangeStateToNodeList());
                 }
             } else {
                 for(ContentChangeListener l: listeners){
-                    l.onPageChange(crtPageName, TemplateManager.getPageName(
+                    l.onPageChange(lastPageName, TemplateManager.getPageName(
                                 crtPage.getPackageName(), crtPage.getIndex()));
                 }
             }
