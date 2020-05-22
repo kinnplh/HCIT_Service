@@ -105,7 +105,7 @@ public class MyExampleClass extends InteractionProxy {
     private Context context;
     private boolean autoJumpTried;
 
-    public static final boolean NEED_OVERLAY = true;
+    public static final boolean NEED_OVERLAY = false;
 
     OverlayController overlayController;
     @Override

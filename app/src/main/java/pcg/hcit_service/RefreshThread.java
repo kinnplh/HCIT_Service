@@ -26,6 +26,8 @@ public class RefreshThread extends Thread {
      */
     public static final Integer MUTEX = 0;
 
+    private static final Integer LISTENER_OP_MUTEX = "LISTENER_OP_MUTEX".hashCode();
+
     /**
      * callback when page content change.
      * The codes will be run in the {@link RefreshThread}, thus the refreshing of ui tree will be blocked. Manually create another thread if necessary
@@ -208,19 +210,25 @@ public class RefreshThread extends Thread {
             lastPageName = TemplateManager.getPageName(lastPageInfo.getPackageName(), lastPageInfo.getIndex());
         }
         if(judgeRes == null){
-            for(ContentChangeListener l: listeners){
-                l.onUnknownPageContentChange(lastPageName, AccessibilityNodeInfoRecord.getNodeChangeStateToNodeList());
+            synchronized (LISTENER_OP_MUTEX){
+                for(ContentChangeListener l: listeners){
+                    l.onUnknownPageContentChange(lastPageName, AccessibilityNodeInfoRecord.getNodeChangeStateToNodeList());
+                }
             }
         } else {
             PageTemplateInfo crtPage = judgeRes.first;
             if(judgeRes.first == lastPageInfo){
-                for(ContentChangeListener l: listeners){
-                    l.onPageUpdate(lastPageName, AccessibilityNodeInfoRecord.getNodeChangeStateToNodeList());
+                synchronized (LISTENER_OP_MUTEX){
+                    for(ContentChangeListener l: listeners){
+                        l.onPageUpdate(lastPageName, AccessibilityNodeInfoRecord.getNodeChangeStateToNodeList());
+                    }
                 }
             } else {
-                for(ContentChangeListener l: listeners){
-                    l.onPageChange(lastPageName, TemplateManager.getPageName(
+                synchronized (LISTENER_OP_MUTEX){
+                    for(ContentChangeListener l: listeners){
+                        l.onPageChange(lastPageName, TemplateManager.getPageName(
                                 crtPage.getPackageName(), crtPage.getIndex()));
+                    }
                 }
             }
         }
@@ -231,7 +239,9 @@ public class RefreshThread extends Thread {
      * @param l the listener to add
      */
     public void bindContentChangeListener(ContentChangeListener l){
-        listeners.add(l);
+        synchronized (LISTENER_OP_MUTEX){
+            listeners.add(l);
+        }
     }
 
     /**
@@ -240,7 +250,9 @@ public class RefreshThread extends Thread {
      * @return true if the listener is deleted successfully
      */
     public boolean unbindContentChangeListener(ContentChangeListener l){
-        return listeners.remove(l);
+        synchronized (LISTENER_OP_MUTEX){
+            return listeners.remove(l);
+        }
     }
 
     /**
@@ -248,11 +260,13 @@ public class RefreshThread extends Thread {
      * @return storeId, you can recover the list use {@link RefreshThread#restoreListeners(long)}
      */
     public long storeCurrentListenersAndClear(){
-        long storeId = System.currentTimeMillis();
-        List<ContentChangeListener> store = new ArrayList<>(this.listeners);
-        storeIdToListeners.put(storeId, store);
-        this.listeners.clear();
-        return storeId;
+        synchronized (LISTENER_OP_MUTEX) {
+            long storeId = System.currentTimeMillis();
+            List<ContentChangeListener> store = new ArrayList<>(this.listeners);
+            storeIdToListeners.put(storeId, store);
+            this.listeners.clear();
+            return storeId;
+        }
     }
 
     /**
