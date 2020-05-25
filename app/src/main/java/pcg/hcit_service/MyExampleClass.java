@@ -176,11 +176,13 @@ public class MyExampleClass extends InteractionProxy {
             }
             if(!autoJumpTried){
                Utility.toast(context, "Enter Alipay", Toast.LENGTH_LONG);
-               List<PageTemplateInfo.TransInfo> res = NodeAccessController.calTransitionPath("com.eg.android.AlipayGphone", 0, 74, Collections.<PageTemplateInfo.TransInfo>emptySet(), Collections.<Integer>emptySet());
                Map<String, String> paraValues = new ArrayMap<>();
                paraValues.put("列表朋友", "段续光");
-               paraValues.put("联系人", "段续光");
+               // paraValues.put("联系人", "段续光");
                paraValues.put("转账金额", "0.01");
+                List<PageTemplateInfo.TransInfo> res = NodeAccessController.calTransitionPath("com.eg.android.AlipayGphone",
+                        0, 74, Collections.<PageTemplateInfo.TransInfo>emptySet(), Collections.<Integer>emptySet(),
+                        paraValues.keySet());
                NodeAccessController.jumpByTransInfoList(res, new NodeAccessController.JumpResCallBack() {
                    @Override
                    public void onResult(boolean successful, String crtPageName, int successStep, PageTemplateInfo.TransInfo crt, List<PageTemplateInfo.TransInfo> oriPath, NodeAccessController.JumpFailReason reason) {

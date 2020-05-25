@@ -5,6 +5,7 @@ import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
+import android.view.accessibility.AccessibilityRecord;
 
 import java.sql.Ref;
 import java.sql.Time;
@@ -215,6 +216,13 @@ public class NodeAccessController {
         }
     }
 
+    public static List<PageTemplateInfo.TransInfo> calTransitionPath(String packageName, int startIndex,
+                                                                     int endIndex,
+                                                                     Set<PageTemplateInfo.TransInfo> stopPathSet,
+                                                                     Set<Integer> stopNodeSet){
+        return calTransitionPath(packageName, startIndex, endIndex, stopPathSet, stopNodeSet, null);
+    }
+
     /**
      * Calculate a path from a given page to another
      * @param packageName indicates the app in which you want to calculate the transition path
@@ -222,12 +230,13 @@ public class NodeAccessController {
      * @param endIndex destination page index
      * @param stopPathSet the action in the calculated path will not appear in the set.
      * @param stopNodeSet the index of pages in the calculated path will not appear in the set
+     * @param providedParas the paras will be provided when executing
      * @return list of {@link PageTemplateInfo.TransInfo} Trans info indicates what you need to do every setp
      */
     public static List<PageTemplateInfo.TransInfo> calTransitionPath(String packageName, int startIndex,
                                                                      int endIndex,
                                                                      Set<PageTemplateInfo.TransInfo> stopPathSet,
-                                                                     Set<Integer> stopNodeSet){
+                                                                     Set<Integer> stopNodeSet, Set<String> providedParas){
         if(startIndex == endIndex){
             return Collections.emptyList();
         }
@@ -255,6 +264,11 @@ public class NodeAccessController {
                 allTransInfoInCrtPage.removeAll(stopPathSet);
                 // 维护数据结构，判断是不是已经找到了路径
                 for(PageTemplateInfo.TransInfo next: allTransInfoInCrtPage){
+                    if(next.usingPara && providedParas != null){
+                        if(!providedParas.contains(next.nlDesc)){
+                            continue;
+                        }
+                    }
                     List<PageTemplateInfo.TransInfo> nextActionList = new ArrayList<>(reachInfoFromSrc.second);
                     nextActionList.add(next);
                     for(int indexToReach: next.transRes){
@@ -281,6 +295,11 @@ public class NodeAccessController {
             if(allTransInfoCanReachCrt != null){
                 allTransInfoCanReachCrt.removeAll(stopPathSet);
                 for(PageTemplateInfo.TransInfo prev: allTransInfoCanReachCrt){
+                    if(prev.usingPara && providedParas != null){
+                        if(!providedParas.contains(prev.nlDesc)){
+                            continue;
+                        }
+                    }
                     List<PageTemplateInfo.TransInfo> prevActionList = new ArrayList<>();
                     prevActionList.add(prev);
                     prevActionList.addAll(reachInfoForDes.second);
@@ -427,6 +446,7 @@ public class NodeAccessController {
             }
             crtStep = 0;
             toExecInfo = transInfoList.get(crtStep);
+            AccessibilityNodeInfoRecord.buildTree();
             execCrt(0, 0, 3000);
             if(!finished)
                 RefreshThread.getInstance().bindContentChangeListener(this);

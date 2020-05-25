@@ -321,7 +321,7 @@ public class TemplateManager {
         return packageNameToAppConf.get(packageName).getPageAliasByIndex(index);
     }
 
-    public static int getPageIndexByname(String packageName, String pageName){
+    public static int getPageIndexByName(String packageName, String pageName){
         if(pageName.startsWith(packageName + '-')){
             String prefix = packageName + '-';
             String pageIndexStr = pageName.substring(prefix.length());
