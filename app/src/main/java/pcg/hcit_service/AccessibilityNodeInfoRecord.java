@@ -535,7 +535,8 @@ public class AccessibilityNodeInfoRecord {
         if(!isImportant){
             isImportant = isClickable() || isCheckable() || isScrollable() || isEditable()
                     || isLongClickable() || (getText() != null && getText().length() > 0)
-                    || (getContentDescription() != null && getContentDescription().length() > 0);
+                    || (getContentDescription() != null && getContentDescription().length() > 0)
+                    || (getViewIdResourceName() != null && getViewIdResourceName().length() > 0);
         }
 
         isImportant = isImportant && !isForceUseless && !isRefresh;
