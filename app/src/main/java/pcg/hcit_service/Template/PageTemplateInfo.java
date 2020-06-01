@@ -32,7 +32,7 @@ import pcg.hcit_service.Utility;
 public class PageTemplateInfo {
     public static class TransInfo{
         public enum Op{
-            CLICK, GLOBAL_BACK, ENTER_TEXT, SCROLL_FORWARD, SCROLL_BACKWARD, UNKNOWN;
+            CLICK, GLOBAL_BACK, ENTER_TEXT, SCROLL_FORWARD, SCROLL_BACKWARD, LONG_CLICK, UNKNOWN;
             public static Op valueFromName(String name){
                 if(Objects.equals(name, "点击")){
                     return CLICK;
@@ -48,6 +48,8 @@ public class PageTemplateInfo {
                         || Objects.equals(name, "滚动-0")
                         || Objects.equals(name, "向下滚动")){
                     return SCROLL_FORWARD;
+                } else if(Objects.equals(name, "长按")){
+                    return LONG_CLICK;
                 }
                 return UNKNOWN;
             }
@@ -61,6 +63,8 @@ public class PageTemplateInfo {
                         return AccessibilityNodeInfo.ACTION_SCROLL_FORWARD;
                     case SCROLL_BACKWARD:
                         return AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD;
+                    case LONG_CLICK:
+                        return AccessibilityNodeInfo.ACTION_LONG_CLICK;
                     default:
                         return -1;
 
