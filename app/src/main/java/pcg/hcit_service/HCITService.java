@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 import pcg.hcit_service.Template.TemplateManager;
 
@@ -86,8 +87,27 @@ public class HCITService extends AccessibilityService {
         }
     }
 
+    // learn from ProcessorScreen.java
+    private int windowIdForNotification = -1;
+    private void updateWindowIdForNotification(AccessibilityEvent event){
+        if(event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
+            return;
+        }
+        List<CharSequence> texts = event.getText();
+        if(texts.isEmpty()){
+            return;
+        }
+
+        CharSequence title = texts.get(0);
+        if(title != null && (title.toString().startsWith("通知栏")
+                || title.toString().startsWith("Notification"))){
+            windowIdForNotification = Utility.getWindowIdByEvent(event);
+        }
+    }
+
     @Override
     public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
+        updateWindowIdForNotification(accessibilityEvent);
         if(accessibilityEvent.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && accessibilityEvent.getPackageName() != null && accessibilityEvent.getClassName() != null) {
             ComponentName componentName = new ComponentName(accessibilityEvent.getPackageName().toString(), accessibilityEvent.getClassName().toString());
             ActivityInfo activityInfo = getActivityInfo(componentName);
@@ -104,18 +124,29 @@ public class HCITService extends AccessibilityService {
                 || accessibilityEvent.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)
                 ){ // todo 更好地处理测试逻辑
             final AccessibilityEvent copiedEvent = AccessibilityEvent.obtain(accessibilityEvent);
-            AccessibilityNodeInfo source = copiedEvent.getSource();
-            if(source == null) {
-                source = getRootInActiveWindow();
-            }
-            if(source != null && isWindowActive(source)) {
-                synchronized (RefreshThread.QUEUE_OP_MUTEX){
-                    refreshThread.setWhenChangeNodeArrive();
-                    refreshThread.addChangedNode(source);
-                }
-            }
+            int windowId = Utility.getWindowIdByEvent(accessibilityEvent);
+            if((windowId != windowIdForNotification) && copiedEvent.getPackageName() != null && (copiedEvent.getPackageName().toString().contains("com.android.systemui") ||
+                    copiedEvent.getPackageName().toString().contains("com.huawei.screenrecorder"))){
+                // todo 处理系统变化
+            } else if(copiedEvent.getPackageName() != null && copiedEvent.getPackageName().toString().contains("talkbackplus")){
+                // todo 处理自身变化
+            } else if(windowId == windowIdForNotification && proxy.ignoreNotificationWindow()){
 
-            copiedEvent.recycle();
+            }
+            else {
+                AccessibilityNodeInfo source = copiedEvent.getSource();
+                if(source == null) {
+                    source = getRootInActiveWindow();
+                }
+                if(source != null && (isWindowActive(source)) || windowId == windowIdForNotification) {
+                    synchronized (RefreshThread.QUEUE_OP_MUTEX){
+                        refreshThread.setWhenChangeNodeArrive();
+                        refreshThread.addChangedNode(source);
+                    }
+                }
+
+                copiedEvent.recycle();
+            }
         }
 
         if(proxy != null){

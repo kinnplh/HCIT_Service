@@ -132,6 +132,11 @@ public class MyExampleClass extends InteractionProxy {
     }
 
     @Override
+    public boolean ignoreNotificationWindow() {
+        return true;
+    }
+
+    @Override
     public boolean onKeyEvent(KeyEvent event) {
         switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_VOLUME_DOWN:
@@ -209,7 +214,7 @@ public class MyExampleClass extends InteractionProxy {
 
     @Override
     public void onUnknownPageContentChange(String lastPageName, Map<String, List<AccessibilityNodeInfoRecord>> changeTypeToNodeList) {
-
+        Log.i(TAG, "unknown page change");
     }
 
 }

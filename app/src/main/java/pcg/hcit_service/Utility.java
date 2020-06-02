@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
@@ -757,6 +758,20 @@ public class Utility {
             return null;
         }
         return (T) a;
+    }
+
+    public static int getWindowIdByEvent(AccessibilityEvent event){
+        if(event.getWindowId() != -1){
+            return event.getWindowId();
+        }
+        AccessibilityNodeInfo node = event.getSource();
+        if (node == null) {
+            return -1;
+        }
+
+        int windowId = node.getWindowId();
+        node.recycle();
+        return windowId;
     }
 }
 

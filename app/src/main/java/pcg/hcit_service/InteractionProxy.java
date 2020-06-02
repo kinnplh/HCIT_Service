@@ -13,6 +13,7 @@ abstract public class InteractionProxy implements RefreshThread.ContentChangeLis
         RefreshThread.getInstance().bindContentChangeListener(this);
     }
 
+    abstract public boolean ignoreNotificationWindow();
     /**
      *
      * called in {@link HCITService#onCreate()}
