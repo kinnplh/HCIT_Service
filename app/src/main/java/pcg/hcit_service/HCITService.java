@@ -109,8 +109,10 @@ public class HCITService extends AccessibilityService {
                 source = getRootInActiveWindow();
             }
             if(source != null && isWindowActive(source)) {
-                refreshThread.setWhenChangeNodeArrive();
-                refreshThread.addChangedNode(source);
+                synchronized (RefreshThread.QUEUE_OP_MUTEX){
+                    refreshThread.setWhenChangeNodeArrive();
+                    refreshThread.addChangedNode(source);
+                }
             }
 
             copiedEvent.recycle();

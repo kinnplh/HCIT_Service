@@ -28,6 +28,8 @@ public class RefreshThread extends Thread {
 
     private static final Integer LISTENER_OP_MUTEX = "LISTENER_OP_MUTEX".hashCode();
 
+    public static final Integer QUEUE_OP_MUTEX = "QUEUE_OP_MUTEX".hashCode();
+
     /**
      * callback when page content change.
      * The codes will be run in the {@link RefreshThread}, thus the refreshing of ui tree will be blocked. Manually create another thread if necessary
@@ -145,16 +147,18 @@ public class RefreshThread extends Thread {
             }
 
             if(!changedNodes.isEmpty()) {
-                List<AccessibilityNodeInfo> nodes = new ArrayList<>(changedNodes);
+                List<AccessibilityNodeInfo> nodes;
+                synchronized (QUEUE_OP_MUTEX){
+                    nodes = new ArrayList<>(changedNodes);
+                    changedNodes.clear();
+                }
                 Utility.filter(nodes, new Utility.cond<AccessibilityNodeInfo>() {
                     @Override
                     public boolean satisfy(AccessibilityNodeInfo a) {
                         return a != null;
                     }
                 });
-
                 firstChangedNodeArrive = 0;
-                changedNodes.clear();
                 // AccessibilityNodeInfoRecord.buildTree();
                 List<AccessibilityNodeInfo> useful = Utility.deleteNodeAsSuccessor(nodes); // 返回的节点并没有被重新obtain
                 Utility.filter(useful, new Utility.cond<AccessibilityNodeInfo>() {
