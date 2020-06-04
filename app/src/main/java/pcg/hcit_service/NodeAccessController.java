@@ -70,10 +70,7 @@ public class NodeAccessController {
         }
         RefreshThread refreshThread = RefreshThread.getInstance();
         AppConfInfo appConfInfo = TemplateManager.getAppConfInfoByPackageName(refreshThread.getCurrentPackage());
-        if(appConfInfo == null){
-            return Collections.emptyList();
-        }
-        String alias = appConfInfo.getAliasBySelectorChain(selectorChain);
+        String alias = appConfInfo == null? null: appConfInfo.getAliasBySelectorChain(selectorChain);
         List<AccessibilityNodeInfoRecord> result = new ArrayList<>();
         if(alias != null){
             List<NodeSearchRes> res = findNodeOnCurrentPageByAlias(alias, aliasToNodeList);
